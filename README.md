@@ -28,6 +28,8 @@ python legged_gym/scripts/train.py --task=a1_amp --headless --sim_device=cuda:0
 ```
 Training takes about 23G GPU memory, and at least 10k iterations recommended.
 
+Unitree Go2 is also supported with bundled offline assets. See the Chinese guide: [Go2 离线资产与训练使用说明](docs/GO2_使用说明.md).
+
 ## Visualization
 **Please make sure you have trained the WMP before**
 ```

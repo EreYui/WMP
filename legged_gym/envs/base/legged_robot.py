@@ -130,7 +130,13 @@ class LeggedRobot(BaseTask):
             self.reward_curriculum_coef = [schedule[2] for schedule in self.cfg.rewards.reward_curriculum_schedule]
 
         if self.cfg.env.reference_state_initialization:
-            self.amp_loader = AMPLoader(motion_files=self.cfg.env.amp_motion_files, device=self.device, time_between_frames=self.dt)
+            self.amp_loader = AMPLoader(
+                motion_files=self.cfg.env.amp_motion_files,
+                device=self.device,
+                time_between_frames=self.dt,
+                reorder_from_pybullet_to_isaac=getattr(
+                    self.cfg.env, "amp_reorder_from_pybullet_to_isaac", False),
+            )
 
     def reset(self):
         """ Reset all robots"""

@@ -75,6 +75,7 @@ class AMPLoader:
             preload_transitions=False,
             num_preload_transitions=1000000,
             motion_files=glob.glob('datasets/motion_files2/*'),
+            reorder_from_pybullet_to_isaac=False,
             ):
         """Expert dataset provides AMP observations from Dog mocap dataset.
 
@@ -98,8 +99,8 @@ class AMPLoader:
             with open(motion_file, "r") as f:
                 motion_json = json.load(f)
                 motion_data = np.array(motion_json["Frames"])
-                #reorder is needed only if using the real animal's data
-                # motion_data = self.reorder_from_pybullet_to_isaac(motion_data)
+                if reorder_from_pybullet_to_isaac:
+                    motion_data = self.reorder_from_pybullet_to_isaac(motion_data)
 
                 # Normalize and standardize quaternions.
                 for f_i in range(motion_data.shape[0]):

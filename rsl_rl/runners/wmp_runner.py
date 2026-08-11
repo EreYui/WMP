@@ -107,7 +107,9 @@ class WMPRunner:
         amp_data = AMPLoader(
             device, time_between_frames=self.env.dt, preload_transitions=True,
             num_preload_transitions=train_cfg['runner']['amp_num_preload_transitions'],
-            motion_files=self.cfg["amp_motion_files"])
+            motion_files=self.cfg["amp_motion_files"],
+            reorder_from_pybullet_to_isaac=self.cfg.get(
+                "amp_reorder_from_pybullet_to_isaac", False))
         amp_normalizer = Normalizer(amp_data.observation_dim)
         discriminator = AMPDiscriminator(
             amp_data.observation_dim * 2,
