@@ -1,0 +1,19 @@
+[package]
+version = "0.1.0"
+category = "isaaclab"
+readme = "README.md"
+title = "WMP Go2"
+author = "WMP Go2 contributors"
+maintainer = "WMP Go2 contributors"
+description = "WMP AMP-PPO and Dreamer world-model locomotion for Unitree Go2"
+repository = ""
+keywords = ["isaaclab", "go2", "locomotion", "amp", "world-model"]
+
+[dependencies]
+"isaaclab" = {}
+"isaaclab_assets" = {}
+
+[[python.module]]
+name = "wmp_go2"
+
+[isaac_lab_settings]

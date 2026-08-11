@@ -1,0 +1,17 @@
+# Local upstream/reference checkout; never publish it from this repository.
+/WMP/
+
+# Codex workspace metadata and external Git metadata placeholder.
+/.agents/
+/.codex/
+/.git/
+
+# Python and test caches.
+__pycache__/
+*.py[cod]
+/.pytest_cache/
+/.ruff_cache/
+
+# Local training outputs.
+/logs/
+*.pt

@@ -1,0 +1,54 @@
+{
+  "format_version": 1,
+  "joint_order": [
+    "FL_hip_joint",
+    "FL_thigh_joint",
+    "FL_calf_joint",
+    "FR_hip_joint",
+    "FR_thigh_joint",
+    "FR_calf_joint",
+    "RL_hip_joint",
+    "RL_thigh_joint",
+    "RL_calf_joint",
+    "RR_hip_joint",
+    "RR_thigh_joint",
+    "RR_calf_joint"
+  ],
+  "quaternion_order": "wxyz",
+  "sequence_boundaries_preserved": true,
+  "kinematic_retargeting": false,
+  "sequences": [
+    {
+      "name": "hop1",
+      "file": "hop1.npz",
+      "source": "/home/re/re_lab/wmp_go2/WMP/datasets/mocap_motions/hop1.txt",
+      "frames": 501,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "hop2",
+      "file": "hop2.npz",
+      "source": "/home/re/re_lab/wmp_go2/WMP/datasets/mocap_motions/hop2.txt",
+      "frames": 501,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "trot1",
+      "file": "trot1.npz",
+      "source": "/home/re/re_lab/wmp_go2/WMP/datasets/mocap_motions/trot1.txt",
+      "frames": 501,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "trot2",
+      "file": "trot2.npz",
+      "source": "/home/re/re_lab/wmp_go2/WMP/datasets/mocap_motions/trot2.txt",
+      "frames": 501,
+      "fps": 50.0,
+      "weight": 1.0
+    }
+  ]
+}

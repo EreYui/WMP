@@ -1,0 +1,4 @@
+[submodule "legged_mpc_amp"]
+	path = legged_mpc_amp
+	url = https://github.com/Lxliam/legged_mpc_amp
+	branch = master
