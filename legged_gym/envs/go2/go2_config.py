@@ -41,7 +41,7 @@ class Go2RoughCfg(LeggedRobotCfg):
         foot_name = "foot"
         penalize_contacts_on = ["thigh", "calf"]
         terminate_after_contacts_on = ["base"]
-        self_collisions = 0
+        self_collisions = 1
 
     class normalization(LeggedRobotCfg.normalization):
         base_height = 0.38

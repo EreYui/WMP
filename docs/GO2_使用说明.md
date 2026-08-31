@@ -64,7 +64,27 @@ python legged_gym/scripts/play.py \
   --terrain=climb
 ```
 
-`--terrain` 可选值与原 A1 流程一致：`slope`、`stair`、`gap`、`climb`、`crawl`、`tilt`。
+`--terrain` 可选值为：`slope`、`stair`、`gap`、`climb`、`crawl`、`tilt`、
+`plum_piles`。
+
+## 障碍课程与相机修正
+
+- Go2 深度相机位置改为官方 `front_camera_joint` 相对 base 的
+  `[0.32715, -0.00003, 0.04297]`。
+- 地形课程改为 16 行，并增加梅花桩：桩径随难度从 0.48 m 减小到 0.26 m，
+  桩间隙从 0.12 m 增大到 0.30 m，坑深从 0.25 m 增大到 0.60 m。
+- 最高等级不再随机回收；升级要求沿 `+X` 穿越 3 m，梅花桩要求 3.4 m 以确认
+  进入落地区，且横向偏移小于 1 m。
+  日志会分别输出 gap、tilt、crawl 和 plum-piles 的平均等级。
+- gap/梅花桩使用 0.45--0.8 m/s 的前进命令，降低跳跃时的竖直速度惩罚并增加
+  有符号前进奖励；梅花桩启用落脚边缘惩罚。tilt 通道改为 0.42--0.34 m，给
+  Go2 保留可学习的碰撞余量。
+- 相机环境优先分配给 tilt、crawl、梅花桩，并修正 depth buffer reset 使用错误
+  环境索引的问题。
+
+上述配置会改变旧 run 的训练分布。建议创建新的日志目录从头训练，并观察：
+`terrain_level_gap`、`terrain_level_tilt`、`terrain_level_crawl`、
+`terrain_level_plum_piles`，不要只根据总 `terrain_level` 判断是否卡住。
 
 ## 配置位置
 
@@ -74,6 +94,8 @@ python legged_gym/scripts/play.py \
 
 Go2 的初始高度、默认关节角、PD 增益、机身高度目标、相机位置和碰撞过滤均在上述 Go2 配置中独立定义，修改 Go2 参数不会覆盖 A1 配置。
 
-## 本次验证范围
+## 验证建议
 
-本次改动只进行静态检查，不在未安装 Isaac Gym 的机器上运行仿真或训练测试。首次在完整 Isaac Gym 环境中运行时，建议先使用较小的 `--num_envs` 和 `--max_iterations` 做显存及资产加载检查。
+首次训练前建议先使用较小的 `--num_envs` 和 `--max_iterations` 检查资产、相机
+和显存，再开始完整的新 run。短时仿真只能验证执行链路，不能证明策略会收敛或
+宽 gap/tilt 已经学会。

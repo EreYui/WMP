@@ -31,11 +31,9 @@
 # This file may have been modified by Bytedance Ltd. and/or its affiliates (“Bytedance's Modifications”).
 # All Bytedance's Modifications are Copyright (year) Bytedance Ltd. and/or its affiliates.
 
-import math
 import random
 
 from legged_gym import LEGGED_GYM_ROOT_DIR, envs
-from time import time
 from warnings import WarningMessage
 import numpy as np
 import os
@@ -43,7 +41,7 @@ import os
 from isaacgym.torch_utils import *
 from isaacgym import gymtorch, gymapi, gymutil
 
-import torch, torchvision
+import torch
 from torch import Tensor
 from typing import Tuple, Dict
 
@@ -80,26 +78,44 @@ class LeggedRobot(BaseTask):
         """
         self.cfg = cfg
 
+        # Match ``Terrain.curriculum`` exactly: terrain kind is selected per
+        # column, then environments are assigned to those columns.  Computing
+        # boundaries from floating cumulative proportions can shift a type by
+        # one environment (for example 0.95 * 20 can round above 19).
+        terrain_proportions = np.asarray(self.cfg.terrain.terrain_proportions, dtype=np.float64)
+        terrain_columns = self.cfg.terrain.num_cols
+        column_choices = np.arange(terrain_columns, dtype=np.float64) / terrain_columns + 0.001
+        column_types = np.searchsorted(np.cumsum(terrain_proportions), column_choices, side="right")
+
+        def terrain_type_end(type_index):
+            end_column = int(np.count_nonzero(column_types <= type_index))
+            return (self.cfg.env.num_envs * end_column + terrain_columns - 1) // terrain_columns
+
         # get terrain type idx
         self.wave_start_idx = 0
-        self.wave_end_idx = math.ceil(self.cfg.env.num_envs * sum(self.cfg.terrain.terrain_proportions[:1]))
+        self.wave_end_idx = terrain_type_end(0)
         self.slope_start_idx = self.wave_end_idx
-        self.slope_end_idx = math.ceil(self.cfg.env.num_envs * sum(self.cfg.terrain.terrain_proportions[:2]))
+        self.slope_end_idx = terrain_type_end(1)
         self.stairup_start_idx = self.slope_end_idx
-        self.stairup_end_idx = math.ceil(self.cfg.env.num_envs * sum(self.cfg.terrain.terrain_proportions[:3]))
+        self.stairup_end_idx = terrain_type_end(2)
         self.stairdown_start_idx = self.stairup_end_idx
-        self.stairdown_end_idx = math.ceil(self.cfg.env.num_envs * sum(self.cfg.terrain.terrain_proportions[:4]))
+        self.stairdown_end_idx = terrain_type_end(3)
         self.discrete_start_idx = self.stairdown_end_idx
-        self.discrete_end_idx = math.ceil(self.cfg.env.num_envs * sum(self.cfg.terrain.terrain_proportions[:5]))
+        self.discrete_end_idx = terrain_type_end(4)
         self.gap_start_idx = self.discrete_end_idx
-        self.gap_end_idx = math.ceil(self.cfg.env.num_envs * sum(self.cfg.terrain.terrain_proportions[:6]))
+        self.gap_end_idx = terrain_type_end(5)
         self.pit_start_idx = self.gap_end_idx
-        self.pit_end_idx = math.ceil(self.cfg.env.num_envs * sum(self.cfg.terrain.terrain_proportions[:7]))
+        self.pit_end_idx = terrain_type_end(6)
         self.tilt_start_idx = self.pit_end_idx
-        self.tilt_end_idx = math.ceil(self.cfg.env.num_envs * sum(self.cfg.terrain.terrain_proportions[:8]))
+        self.tilt_end_idx = terrain_type_end(7)
         self.crawl_start_idx = self.tilt_end_idx
-        self.crawl_end_idx = math.ceil(self.cfg.env.num_envs * sum(self.cfg.terrain.terrain_proportions[:9]))
-        self.roughflat_start_idx = self.crawl_end_idx
+        self.crawl_end_idx = terrain_type_end(8)
+        self.plum_piles_start_idx = self.crawl_end_idx
+        if len(self.cfg.terrain.terrain_proportions) > 10:
+            self.plum_piles_end_idx = terrain_type_end(9)
+        else:
+            self.plum_piles_end_idx = self.plum_piles_start_idx
+        self.roughflat_start_idx = self.plum_piles_end_idx
         self.roughflat_end_idx = self.cfg.env.num_envs
 
         self.sim_params = sim_params
@@ -110,9 +126,6 @@ class LeggedRobot(BaseTask):
         self.init_done = False
         self._parse_cfg(self.cfg)
         super().__init__(self.cfg, sim_params, physics_engine, sim_device, headless)
-
-        self.resize_transform = torchvision.transforms.Resize((self.cfg.depth.resized[0], self.cfg.depth.resized[1]),
-                                                              interpolation=torchvision.transforms.InterpolationMode.BICUBIC)
 
         if not self.headless:
             self.set_camera(self.cfg.viewer.pos, self.cfg.viewer.lookat)
@@ -217,7 +230,6 @@ class LeggedRobot(BaseTask):
         # depth_image = self.crop_depth_image(depth_image)
         depth_image += self.cfg.depth.dis_noise * 2 * (torch.rand(1)-0.5)[0]
         depth_image = torch.clip(depth_image, -self.cfg.depth.far_clip, -self.cfg.depth.near_clip)
-        # depth_image = self.resize_transform(depth_image[None, :]).squeeze()
         depth_image = self.normalize_depth_image(depth_image)
         return depth_image
 
@@ -234,7 +246,6 @@ class LeggedRobot(BaseTask):
         # self.gym.fetch_results(self.sim, True)
         self.gym.step_graphics(self.sim)  # required to render in headless mode
         self.gym.render_all_camera_sensors(self.sim)
-        start_time = time()
         self.gym.start_access_image_tensors(self.sim)
         # for i in range(self.num_envs):
         for i in range(len(self.depth_index)):
@@ -249,13 +260,12 @@ class LeggedRobot(BaseTask):
             # if(i == 0): print(torch.mean(depth_image)) # for debug, sometimes isaacgym will return all -inf depth image if not config properly
 
             init_flag = self.episode_length_buf <= 1
-            if init_flag[i]:
+            if init_flag[self.depth_index[i]]:
                 self.depth_buffer[i] = torch.stack([depth_image] * self.cfg.depth.buffer_len, dim=0)
             else:
                 self.depth_buffer[i] = torch.cat([self.depth_buffer[i, 1:], depth_image.to(self.device).unsqueeze(0)],
                                                  dim=0)
         self.gym.end_access_image_tensors(self.sim)
-        print('acquiring depth image time:', time()-start_time)
 
 
     def get_observations(self):
@@ -393,6 +403,16 @@ class LeggedRobot(BaseTask):
         # log additional curriculum info
         if self.cfg.terrain.curriculum:
             self.extras["episode"]["terrain_level"] = torch.mean(self.terrain_levels.float())
+            terrain_ranges = {
+                "gap": (self.gap_start_idx, self.gap_end_idx),
+                "tilt": (self.tilt_start_idx, self.tilt_end_idx),
+                "crawl": (self.crawl_start_idx, self.crawl_end_idx),
+                "plum_piles": (self.plum_piles_start_idx, self.plum_piles_end_idx),
+            }
+            for name, (start, end) in terrain_ranges.items():
+                if end > start:
+                    self.extras["episode"]["terrain_level_" + name] = torch.mean(
+                        self.terrain_levels[start:end].float())
         if self.cfg.commands.curriculum:
             self.extras["episode"]["max_command_x"] = self.command_ranges["lin_vel_x"][1]
             self.extras["episode"]["max_command_yaw"] = self.command_ranges["ang_vel_yaw"][1]
@@ -682,6 +702,25 @@ class LeggedRobot(BaseTask):
         # set small commands to zero
         self.commands[env_ids, :2] *= (torch.norm(self.commands[env_ids, :2], dim=1) > 0.2).unsqueeze(1)
 
+        # Jumping obstacles need a usable approach speed.  Sampling commands
+        # arbitrarily close to zero teaches waiting at the gap instead.
+        if hasattr(self.cfg.commands, "jump_lin_vel_x"):
+            jump_mask = (
+                ((env_ids >= self.gap_start_idx) & (env_ids < self.gap_end_idx))
+                | ((env_ids >= self.plum_piles_start_idx) & (env_ids < self.plum_piles_end_idx))
+            )
+            jump_ids = env_ids[jump_mask]
+            if len(jump_ids) > 0:
+                command_range = self.cfg.commands.jump_lin_vel_x
+                self.commands[jump_ids, 0] = torch_rand_float(
+                    command_range[0], command_range[1], (len(jump_ids), 1), device=self.device).squeeze(1)
+        if hasattr(self.cfg.commands, "tilt_lin_vel_x"):
+            tilt_ids = env_ids[(env_ids >= self.tilt_start_idx) & (env_ids < self.tilt_end_idx)]
+            if len(tilt_ids) > 0:
+                command_range = self.cfg.commands.tilt_lin_vel_x
+                self.commands[tilt_ids, 0] = torch_rand_float(
+                    command_range[0], command_range[1], (len(tilt_ids), 1), device=self.device).squeeze(1)
+
         # set heading command for tilt envs to zero
         self.commands[self.tilt_start_idx:self.tilt_end_idx, 3] = 0
         self.commands[self.pit_start_idx:self.pit_end_idx, 3] = 0
@@ -766,22 +805,24 @@ class LeggedRobot(BaseTask):
         else:
             self.root_states[env_ids] = self.base_init_state
             self.root_states[env_ids, :3] += self.env_origins[env_ids]
-        # the base y position of tilt and gap envs can not deviate too far from the origin center
+        # Keep narrow, directional obstacle courses centered at reset.
         tilt_env_ids = env_ids[torch.where(env_ids >= self.tilt_start_idx)]
         tilt_env_ids = tilt_env_ids[torch.where(tilt_env_ids < self.tilt_end_idx)]
         gap_env_ids = env_ids[torch.where(env_ids >= self.gap_start_idx)]
         gap_env_ids = gap_env_ids[torch.where(gap_env_ids < self.gap_end_idx)]
-        tilt_and_gap_env_ids = torch.concatenate((tilt_env_ids, gap_env_ids))
+        plum_piles_env_ids = env_ids[torch.where(env_ids >= self.plum_piles_start_idx)]
+        plum_piles_env_ids = plum_piles_env_ids[torch.where(plum_piles_env_ids < self.plum_piles_end_idx)]
+        centered_course_env_ids = torch.concatenate((tilt_env_ids, gap_env_ids, plum_piles_env_ids))
 
         if self.custom_origins:
-            self.root_states[tilt_and_gap_env_ids] = self.base_init_state
-            self.root_states[tilt_and_gap_env_ids, :3] += self.env_origins[tilt_and_gap_env_ids]
-            self.root_states[tilt_and_gap_env_ids, :1] += torch_rand_float(-1., 1., (len(tilt_and_gap_env_ids), 1), device=self.device) # x position within 1m of the center
-            self.root_states[tilt_and_gap_env_ids, 1:2] += torch_rand_float(-0.0, 0.0, (len(tilt_and_gap_env_ids), 1),
+            self.root_states[centered_course_env_ids] = self.base_init_state
+            self.root_states[centered_course_env_ids, :3] += self.env_origins[centered_course_env_ids]
+            self.root_states[centered_course_env_ids, :1] += torch_rand_float(-1., 1., (len(centered_course_env_ids), 1), device=self.device) # x position within 1m of the center
+            self.root_states[centered_course_env_ids, 1:2] += torch_rand_float(-0.0, 0.0, (len(centered_course_env_ids), 1),
                                                                device=self.device)
         else:
-            self.root_states[tilt_and_gap_env_ids] = self.base_init_state
-            self.root_states[tilt_and_gap_env_ids, :3] += self.env_origins[tilt_and_gap_env_ids]
+            self.root_states[centered_course_env_ids] = self.base_init_state
+            self.root_states[centered_course_env_ids, :3] += self.env_origins[centered_course_env_ids]
 
         # the base y position of gap env can not deviate too far from the origin center
         # gap_env_ids = env_ids[torch.where(env_ids >= self.gap_start_idx)]
@@ -798,6 +839,7 @@ class LeggedRobot(BaseTask):
 
         # base velocities
         self.root_states[env_ids, 7:13] = torch_rand_float(-0.5, 0.5, (len(env_ids), 6), device=self.device) # [7:10]: lin vel, [10:13]: ang vel
+        self.episode_start_pos[env_ids] = self.root_states[env_ids, :2]
         env_ids_int32 = env_ids.to(dtype=torch.int32)
         self.gym.set_actor_root_state_tensor_indexed(self.sim,
                                                      gymtorch.unwrap_tensor(self.root_states),
@@ -818,6 +860,7 @@ class LeggedRobot(BaseTask):
         self.root_states[env_ids, 3:7] = root_orn
         self.root_states[env_ids, 7:10] = quat_rotate(root_orn, AMPLoader.get_linear_vel_batch(frames))
         self.root_states[env_ids, 10:13] = quat_rotate(root_orn, AMPLoader.get_angular_vel_batch(frames))
+        self.episode_start_pos[env_ids] = self.root_states[env_ids, :2]
 
         env_ids_int32 = env_ids.to(dtype=torch.int32)
         self.gym.set_actor_root_state_tensor_indexed(self.sim,
@@ -850,16 +893,54 @@ class LeggedRobot(BaseTask):
         if not self.init_done:
             # don't change on initial reset
             return
-        distance = torch.norm(self.root_states[env_ids, :2] - self.env_origins[env_ids, :2], dim=1)
-        # robots that walked far enough progress to harder terains
-        move_up = distance > self.terrain.env_length / 2
-        # robots that walked less than half of their required distance go to simpler terrains
-        move_down = (distance < torch.norm(self.commands[env_ids, :2], dim=1)*self.max_episode_length_s*0.5) * ~move_up
+        root_xy = self.root_states[env_ids, :2]
+        origin_xy = self.env_origins[env_ids, :2]
+        if getattr(self.cfg.terrain, "signed_course_curriculum", False):
+            directional = env_ids < self.roughflat_start_idx
+        else:
+            directional = torch.zeros_like(env_ids, dtype=torch.bool)
+        course_progress = torch.where(
+            directional,
+            root_xy[:, 0] - origin_xy[:, 0],
+            torch.norm(root_xy - origin_xy, dim=1),
+        )
+        travel_progress = torch.where(
+            directional,
+            root_xy[:, 0] - self.episode_start_pos[env_ids, 0],
+            torch.norm(root_xy - self.episode_start_pos[env_ids], dim=1),
+        )
+        success_distance = torch.full_like(
+            course_progress,
+            getattr(self.cfg.terrain, "curriculum_success_distance", self.terrain.env_length / 2),
+        )
+        if hasattr(self.cfg.terrain, "plum_curriculum_success_distance"):
+            plum_mask = (env_ids >= self.plum_piles_start_idx) & (env_ids < self.plum_piles_end_idx)
+            success_distance[plum_mask] = self.cfg.terrain.plum_curriculum_success_distance
+        lateral_error = torch.abs(root_xy[:, 1] - origin_xy[:, 1])
+        max_lateral_error = getattr(self.cfg.terrain, "curriculum_max_lateral_error", 1.0)
+        stayed_on_course = ~directional | (lateral_error < max_lateral_error)
+        move_up = (course_progress > success_distance) & stayed_on_course
+        elapsed = self.episode_length_buf[env_ids] * self.dt
+        commanded_distance = torch.norm(self.commands[env_ids, :2], dim=1) * elapsed
+        down_fraction = getattr(self.cfg.terrain, "curriculum_down_fraction", 0.5)
+        move_down = (
+            (commanded_distance > 0.1)
+            & (travel_progress < commanded_distance * down_fraction)
+            & ~move_up
+        )
         self.terrain_levels[env_ids] += 1 * move_up - 1 * move_down
-        # Robots that solve the last level are sent to a random one
-        self.terrain_levels[env_ids] = torch.where(self.terrain_levels[env_ids]>=self.max_terrain_level,
-                                                   torch.randint_like(self.terrain_levels[env_ids], self.max_terrain_level),
-                                                   torch.clip(self.terrain_levels[env_ids], 0)) # (the minumum level is zero)
+        if getattr(self.cfg.terrain, "retain_max_terrain_level", False):
+            # Randomly recycling solved robots to all rows makes the old
+            # ten-row curriculum's long-run mean converge to level 6.
+            self.terrain_levels[env_ids] = torch.clip(
+                self.terrain_levels[env_ids], 0, self.max_terrain_level - 1)
+        else:
+            # Preserve the upstream behavior for non-Go2 task configurations.
+            self.terrain_levels[env_ids] = torch.where(
+                self.terrain_levels[env_ids] >= self.max_terrain_level,
+                torch.randint_like(self.terrain_levels[env_ids], self.max_terrain_level),
+                torch.clip(self.terrain_levels[env_ids], 0),
+            )
         self.env_origins[env_ids] = self.terrain_origins[self.terrain_levels[env_ids], self.terrain_types[env_ids]]
 
     def update_command_curriculum(self, env_ids):
@@ -984,6 +1065,7 @@ class LeggedRobot(BaseTask):
         self.last_torques = torch.zeros_like(self.torques)
         self.last_root_vel = torch.zeros_like(self.root_states[:, 7:13])
         self.commands = torch.zeros(self.num_envs, self.cfg.commands.num_commands, dtype=torch.float, device=self.device, requires_grad=False) # x vel, y vel, yaw vel, heading
+        self.episode_start_pos = self.root_states[:, :2].clone()
         self.commands_scale = torch.tensor([self.obs_scales.lin_vel, self.obs_scales.lin_vel, self.obs_scales.ang_vel], device=self.device, requires_grad=False,) # TODO change this
         self.feet_air_time = torch.zeros(self.num_envs, self.feet_indices.shape[0], dtype=torch.float, device=self.device, requires_grad=False)
         self.last_contacts = torch.zeros(self.num_envs, len(self.feet_indices), dtype=torch.bool, device=self.device, requires_grad=False)
@@ -1238,13 +1320,25 @@ class LeggedRobot(BaseTask):
         self.randomized_com_pos = torch.zeros(self.num_envs, 3, device=self.device, requires_grad=False)
 
         if(self.cfg.depth.use_camera):
-            # All robots of Tilt and Crawl needs depth camera
+            # Vertical 3-D obstacles cannot be reconstructed from the legacy
+            # height field alone, so prioritize tilt/crawl/plum-pile robots and
+            # distribute the remaining camera budget across other terrains.
             self.cfg.depth.camera_num_envs = min(self.cfg.depth.camera_num_envs, self.num_envs)
-            self.depth_index_without_crawl_tilt = np.random.choice(range(self.tilt_start_idx), self.cfg.depth.camera_num_envs
-                                                             - (self.crawl_end_idx - self.tilt_start_idx), replace=False)
-            self.depth_index_without_crawl_tilt = np.sort(self.depth_index_without_crawl_tilt).astype(np.int)
-            self.depth_index = np.concatenate((self.depth_index_without_crawl_tilt, range(self.tilt_start_idx, self.crawl_end_idx))).astype(np.int)
-            self.depth_index_inverse = -np.ones(self.num_envs, dtype=np.int)
+            priority_index = np.arange(self.tilt_start_idx, self.plum_piles_end_idx, dtype=np.int64)
+            if len(priority_index) > self.cfg.depth.camera_num_envs:
+                priority_index = np.sort(np.random.choice(
+                    priority_index, self.cfg.depth.camera_num_envs, replace=False))
+            non_priority_candidates = np.setdiff1d(
+                np.arange(self.num_envs, dtype=np.int64), priority_index, assume_unique=True)
+            remaining = self.cfg.depth.camera_num_envs - len(priority_index)
+            if remaining > 0:
+                self.depth_index_without_crawl_tilt = np.sort(np.random.choice(
+                    non_priority_candidates, remaining, replace=False)).astype(np.int64)
+            else:
+                self.depth_index_without_crawl_tilt = np.empty(0, dtype=np.int64)
+            self.depth_index = np.sort(np.concatenate(
+                (self.depth_index_without_crawl_tilt, priority_index))).astype(np.int64)
+            self.depth_index_inverse = -np.ones(self.num_envs, dtype=np.int64)
             for i in range(len(self.depth_index)):
                 self.depth_index_inverse[self.depth_index[i]] = i
 
@@ -1457,7 +1551,19 @@ class LeggedRobot(BaseTask):
     #------------ reward functions----------------
     def _reward_lin_vel_z(self):
         # Penalize z axis base linear velocity
-        return torch.square(self.base_lin_vel[:, 2])
+        penalty = torch.square(self.base_lin_vel[:, 2])
+        jump_scale = getattr(self.cfg.rewards, "jump_vertical_velocity_penalty_scale", 1.0)
+        if jump_scale != 1.0:
+            penalty[self.gap_start_idx:self.gap_end_idx] *= jump_scale
+            penalty[self.plum_piles_start_idx:self.plum_piles_end_idx] *= jump_scale
+        return penalty
+
+    def _reward_terrain_progress(self):
+        """Dense signed progress for the positive-x obstacle courses."""
+        reward = torch.zeros(self.num_envs, device=self.device)
+        reward[:self.roughflat_start_idx] = torch.clip(
+            self.root_states[:self.roughflat_start_idx, 7], 0.0, 1.0)
+        return reward
 
     def _reward_ang_vel_xy(self):
         # Penalize xy axes base angular velocity
@@ -1640,6 +1746,8 @@ class LeggedRobot(BaseTask):
 
         edge_reward = torch.zeros_like(rew)
         edge_reward[self.gap_start_idx:self.pit_end_idx] = rew[self.gap_start_idx:self.pit_end_idx]
+        edge_reward[self.plum_piles_start_idx:self.plum_piles_end_idx] = rew[
+            self.plum_piles_start_idx:self.plum_piles_end_idx]
         return edge_reward
 
     def _reward_feet_stumble(self):
@@ -1651,6 +1759,8 @@ class LeggedRobot(BaseTask):
         rew = rew.float()
         stumble_reward = torch.zeros_like(rew)
         stumble_reward[self.gap_start_idx:self.pit_end_idx] = rew[self.gap_start_idx:self.pit_end_idx]
+        stumble_reward[self.plum_piles_start_idx:self.plum_piles_end_idx] = rew[
+            self.plum_piles_start_idx:self.plum_piles_end_idx]
         return stumble_reward
 
     def _reward_delta_torques(self):

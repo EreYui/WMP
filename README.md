@@ -17,7 +17,6 @@ Code for the paper:
     - `sudo apt-get install build-essential --fix-missing`
     - `sudo apt-get install ninja-build`
     - `pip install setuptools==59.5.0`
-    - `pip install ruamel_yaml==0.17.4`
     - `sudo apt install libgl1-mesa-glx -y`
     - `pip install opencv-contrib-python`
     - `pip install -r requirements.txt`

@@ -86,16 +86,17 @@ def play(args):
         env_cfg.rewards.scales.feet_stumble = 0
 
 
-    if(args.terrain not in ['slope', 'stair', 'gap', 'climb', 'crawl', 'tilt']):
-        print('terrain should be one of slope, stair, gap, climb, crawl, and tilt, set to climb as default')
+    if(args.terrain not in ['slope', 'stair', 'gap', 'climb', 'crawl', 'tilt', 'plum_piles']):
+        print('terrain should be one of slope, stair, gap, climb, crawl, tilt, and plum_piles; set to climb')
         args.terrain = 'climb'
     env_cfg.terrain.terrain_proportions = {
-        'slope': [0, 1.0, 0.0, 0, 0, 0, 0, 0, 0],
-        'stair': [0, 0, 1.0, 0, 0, 0, 0, 0, 0],
-        'gap': [0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0],
-        'climb': [0, 0, 0, 0, 0, 0, 1.0, 0, 0, 0],
-        'tilt': [0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0],
-        'crawl': [0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0],
+        'slope': [0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        'stair': [0, 0, 1.0, 0, 0, 0, 0, 0, 0, 0, 0],
+        'gap': [0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0, 0],
+        'climb': [0, 0, 0, 0, 0, 0, 1.0, 0, 0, 0, 0],
+        'tilt': [0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0, 0],
+        'crawl': [0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0],
+        'plum_piles': [0, 0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0],
      }[args.terrain]
 
     env_cfg.commands.ranges.lin_vel_x = [0.6, 0.6]

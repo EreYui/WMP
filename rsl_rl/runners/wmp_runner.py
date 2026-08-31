@@ -50,7 +50,7 @@ from rsl_rl.modules import DepthPredictor
 import torch.optim as optim
 
 from dreamer.models import *
-import ruamel.yaml as yaml
+import yaml
 import argparse
 import pathlib
 import sys
@@ -420,6 +420,8 @@ class WMPRunner:
 
     def train_depth_predictor(self):
         total_mse_loss = 0
+        if len(self.env.depth_index_without_crawl_tilt) == 0:
+            return 0.0
         for _ in range(self.depth_predictor_cfg["training_iters"]):
             batch_idx = np.random.choice(self.env.depth_index_without_crawl_tilt, self.depth_predictor_cfg["batch_size"],
                                          replace=True)

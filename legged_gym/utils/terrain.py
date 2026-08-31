@@ -144,9 +144,11 @@ class Terrain:
         discrete_obstacles_height = 0.05 + difficulty * 0.2
         stepping_stones_size = 1.5 * (1.05 - difficulty)
         stone_distance = 0.05 if difficulty == 0 else 0.1
-        gap_size = 1. * difficulty
+        gap_width_range = getattr(self.cfg, "gap_width_range", [0.0, 1.0])
+        gap_size = gap_width_range[0] + difficulty * (gap_width_range[1] - gap_width_range[0])
         pit_depth = 0.6 * difficulty
-        tilt_width = 0.32 - 0.04 * difficulty
+        tilt_width_range = getattr(self.cfg, "tilt_width_range", [0.32, 0.28])
+        tilt_width = tilt_width_range[0] + difficulty * (tilt_width_range[1] - tilt_width_range[0])
         stair_step_width = 0.30 + random.random() * 0.04
         if choice < self.proportions[0]:
             terrain_utils.wave_terrain(terrain, num_waves=5, amplitude=amplitude)
@@ -194,7 +196,7 @@ class Terrain:
                     box_z
                 ], dtype=np.float32),
                 np.array([
-                    env_origin_x +  self.cfg.border_size + 2 + box_x / 2,
+                    env_origin_x + self.cfg.border_size + 2 + box_x / 2,
                     env_origin_y + self.cfg.border_size - tilt_width / 2 - (self.env_width - tilt_width) / 4,# / self.cfg.horizontal_scale,
                     box_z/2,
                 ], dtype=np.float32),
@@ -299,7 +301,7 @@ class Terrain:
                     box_z
                 ], dtype=np.float32),
                 np.array([
-                    env_origin_x +  self.cfg.border_size + 2 + box_x / 2,
+                    env_origin_x + self.cfg.border_size - 2 - box_x / 2,
                     env_origin_y + self.cfg.border_size,
                     crawl_height + box_z/2,
                 ], dtype=np.float32),
@@ -310,6 +312,15 @@ class Terrain:
                 self.added_trimesh = trimesh.combine_trimeshes(
                 self.added_trimesh,
                 back_upper_bar_trimesh,
+            )
+        elif len(self.proportions) > 10 and choice < self.proportions[9]:
+            plum_piles_terrain(
+                terrain,
+                difficulty=difficulty,
+                pile_diameter_range=getattr(self.cfg, "plum_pile_diameter_range", [0.48, 0.26]),
+                pile_gap_range=getattr(self.cfg, "plum_pile_gap_range", [0.12, 0.30]),
+                pit_depth_range=getattr(self.cfg, "plum_pit_depth_range", [0.25, 0.60]),
+                height_variation_range=getattr(self.cfg, "plum_height_variation_range", [0.0, 0.10]),
             )
         else:
             terrain_utils.random_uniform_terrain(terrain, min_height=-0.05, max_height=0.05, step=0.005,
@@ -370,6 +381,64 @@ def climb_terrain(terrain, depth, platform_size=1.):
 
     terrain.height_field_raw[x1:x2, :] = depth
     terrain.height_field_raw[x3:x4, :] = depth
+
+
+def plum_piles_terrain(
+        terrain,
+        difficulty,
+        pile_diameter_range=(0.48, 0.26),
+        pile_gap_range=(0.12, 0.30),
+        pit_depth_range=(0.25, 0.60),
+        height_variation_range=(0.0, 0.10),
+        approach_length=5.0,
+        landing_length=0.8):
+    """Create staggered circular stepping piles over a finite-depth pit.
+
+    Keeping the pile tops in the height field makes the obstacle visible to
+    both the privileged scan and WMP's forward-map depth predictor.
+    """
+    diameter = pile_diameter_range[0] + difficulty * (pile_diameter_range[1] - pile_diameter_range[0])
+    gap = pile_gap_range[0] + difficulty * (pile_gap_range[1] - pile_gap_range[0])
+    pit_depth = pit_depth_range[0] + difficulty * (pit_depth_range[1] - pit_depth_range[0])
+    height_variation = (
+        height_variation_range[0]
+        + difficulty * (height_variation_range[1] - height_variation_range[0])
+    )
+    radius = 0.5 * diameter
+    pitch = diameter + gap
+    horizontal_scale = terrain.horizontal_scale
+    vertical_scale = terrain.vertical_scale
+    length_m = terrain.length * horizontal_scale
+    width_m = terrain.width * horizontal_scale
+    landing_start = length_m - landing_length
+
+    pit_raw = int(round(pit_depth / vertical_scale))
+    terrain.height_field_raw[:, :] = -pit_raw
+    approach_px = int(round(approach_length / horizontal_scale))
+    landing_px = int(round(landing_start / horizontal_scale))
+    terrain.height_field_raw[:approach_px, :] = 0
+    terrain.height_field_raw[landing_px:, :] = 0
+
+    grid_x = np.arange(terrain.length) * horizontal_scale
+    grid_y = np.arange(terrain.width) * horizontal_scale
+    row = 0
+    x = approach_length + radius
+    while x <= landing_start - radius + 1e-6:
+        y = radius + (0.5 * pitch if row % 2 else 0.0)
+        column = 0
+        while y <= width_m - radius + 1e-6:
+            disc = (
+                (grid_x[:, None] - x) ** 2
+                + (grid_y[None, :] - y) ** 2
+                <= radius ** 2
+            )
+            phase = (row * 3 + column * 5) % 7 / 6.0
+            top_raw = int(round(height_variation * phase / vertical_scale))
+            terrain.height_field_raw[disc] = top_raw
+            y += pitch
+            column += 1
+        x += pitch
+        row += 1
 
 def convert_heightfield_to_trimesh(height_field_raw, horizontal_scale, vertical_scale, slope_threshold=None):
     """
