@@ -1,0 +1,183 @@
+{
+  "format_version": 1,
+  "joint_order": [
+    "FL_hip_joint",
+    "FL_thigh_joint",
+    "FL_calf_joint",
+    "FR_hip_joint",
+    "FR_thigh_joint",
+    "FR_calf_joint",
+    "RL_hip_joint",
+    "RL_thigh_joint",
+    "RL_calf_joint",
+    "RR_hip_joint",
+    "RR_thigh_joint",
+    "RR_calf_joint"
+  ],
+  "quaternion_order": "wxyz",
+  "sequence_boundaries_preserved": true,
+  "kinematic_retargeting": false,
+  "source_leg_order": [
+    "FL",
+    "FR",
+    "RL",
+    "RR"
+  ],
+  "sequences": [
+    {
+      "name": "bound__backward_0.6mps",
+      "file": "bound__backward_0.6mps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/bound/backward_0.6mps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "bound__forward_0.6mps",
+      "file": "bound__forward_0.6mps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/bound/forward_0.6mps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "bound__forward_1.0mps",
+      "file": "bound__forward_1.0mps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/bound/forward_1.0mps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "bound__left_0.4mps",
+      "file": "bound__left_0.4mps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/bound/left_0.4mps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "bound__right_0.4mps",
+      "file": "bound__right_0.4mps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/bound/right_0.4mps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "bound__turn_ccw_0.8radps",
+      "file": "bound__turn_ccw_0.8radps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/bound/turn_ccw_0.8radps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "bound__turn_cw_0.8radps",
+      "file": "bound__turn_cw_0.8radps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/bound/turn_cw_0.8radps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "flat__backward_0.6mps",
+      "file": "flat__backward_0.6mps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/flat/backward_0.6mps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "flat__forward_0.6mps",
+      "file": "flat__forward_0.6mps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/flat/forward_0.6mps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "flat__left_0.4mps",
+      "file": "flat__left_0.4mps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/flat/left_0.4mps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "flat__right_0.4mps",
+      "file": "flat__right_0.4mps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/flat/right_0.4mps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "flat__turn_ccw_0.8radps",
+      "file": "flat__turn_ccw_0.8radps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/flat/turn_ccw_0.8radps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "flat__turn_cw_0.8radps",
+      "file": "flat__turn_cw_0.8radps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/flat/turn_cw_0.8radps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "hop__backward_0.6mps",
+      "file": "hop__backward_0.6mps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/hop/backward_0.6mps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "hop__forward_0.6mps",
+      "file": "hop__forward_0.6mps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/hop/forward_0.6mps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "hop__left_0.4mps",
+      "file": "hop__left_0.4mps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/hop/left_0.4mps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "hop__right_0.4mps",
+      "file": "hop__right_0.4mps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/hop/right_0.4mps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "hop__turn_ccw_0.8radps",
+      "file": "hop__turn_ccw_0.8radps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/hop/turn_ccw_0.8radps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "hop__turn_cw_0.8radps",
+      "file": "hop__turn_cw_0.8radps.npz",
+      "source": "../wmp_go1/datasets/mocap_motions_collected/hop/turn_cw_0.8radps.txt",
+      "frames": 500,
+      "fps": 50.0,
+      "weight": 1.0
+    }
+  ],
+  "dataset": "go1",
+  "upstream_repository": "https://github.com/haozhang04/wmp_go1",
+  "upstream_commit": "65cf1afd13e4792bce7b9def6f44372ecbb3cdf0"
+}

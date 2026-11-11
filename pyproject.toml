@@ -1,12 +1,20 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["source/wmp_go2"]
+pythonpath = ["source/wmp_lab"]
 addopts = "-ra"
 
 [tool.ruff]
 target-version = "py311"
 line-length = 120
-extend-exclude = ["WMP", "legged_mpc_amp", "source/wmp_go2/wmp_go2/assets"]
+extend-exclude = [
+    ".work",
+    "source/wmp_lab/wmp_lab/assets",
+    "source/wmp_lab/wmp_lab/learning/upstream_dreamer",
+    "source/wmp_lab/wmp_lab/learning/legacy_v2",
+    "source/wmp_lab/wmp_lab/sensors/upstream_wmp",
+    "source/wmp_lab/wmp_lab/reference/terrain.py",
+    "source/wmp_lab/wmp_lab/reference/meshes.py",
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]

@@ -1,0 +1,17 @@
+{
+  "backend": "IsaacLab",
+  "control_revision": "upstream_pd_v1",
+  "comparison": "Within IsaacLab only; no Isaac Gym performance baseline",
+  "common_args": ["--terrain", "rough_flat", "--num-envs", "512", "--camera-envs", "128", "--rows", "2", "--seed", "7", "--amp-sampling", "upstream_v1", "--amp-preload", "2000000", "--iterations", "1000", "--save-interval", "100"],
+  "cases": [
+    {"name": "go1_shared9", "robot": "go1", "amp_set": "upstream", "dataset": "motions_upstream", "clips": 9},
+    {"name": "go2_shared9", "robot": "go2", "amp_set": "upstream", "dataset": "motions_upstream", "clips": 9},
+    {"name": "go1_robot19", "robot": "go1", "amp_set": "robot", "dataset": "motions_go1", "clips": 19},
+    {"name": "go2_robot17", "robot": "go2", "amp_set": "robot", "dataset": "motions_go2", "clips": 17}
+  ],
+  "initial_budget_only": true,
+  "contrasts": [["go1_shared9", "go2_shared9"], ["go1_shared9", "go1_robot19"], ["go2_shared9", "go2_robot17"]],
+  "seed_replications_required_for_conclusions": [7, 17, 27],
+  "evaluation": {"command_mps": 0.45, "duration_seconds": 20, "terrain_levels": [0], "report": ["mean_signed_progress", "terminations", "action_saturation", "action_std", "tracking_error", "terrain_success"]},
+  "training_started": false
+}

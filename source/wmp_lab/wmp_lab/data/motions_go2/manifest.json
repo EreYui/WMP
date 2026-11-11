@@ -1,0 +1,167 @@
+{
+  "format_version": 1,
+  "joint_order": [
+    "FL_hip_joint",
+    "FL_thigh_joint",
+    "FL_calf_joint",
+    "FR_hip_joint",
+    "FR_thigh_joint",
+    "FR_calf_joint",
+    "RL_hip_joint",
+    "RL_thigh_joint",
+    "RL_calf_joint",
+    "RR_hip_joint",
+    "RR_thigh_joint",
+    "RR_calf_joint"
+  ],
+  "quaternion_order": "wxyz",
+  "sequence_boundaries_preserved": true,
+  "kinematic_retargeting": false,
+  "source_leg_order": [
+    "FL",
+    "FR",
+    "RL",
+    "RR"
+  ],
+  "sequences": [
+    {
+      "name": "go2_backward_0.4mps",
+      "file": "go2_backward_0.4mps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_backward_0.4mps.txt",
+      "frames": 149,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_backward_0.7mps",
+      "file": "go2_backward_0.7mps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_backward_0.7mps.txt",
+      "frames": 250,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_backward_1.0mps",
+      "file": "go2_backward_1.0mps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_backward_1.0mps.txt",
+      "frames": 250,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_forward_0.4mps",
+      "file": "go2_forward_0.4mps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_forward_0.4mps.txt",
+      "frames": 149,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_forward_0.8mps",
+      "file": "go2_forward_0.8mps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_forward_0.8mps.txt",
+      "frames": 249,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_forward_1.3mps",
+      "file": "go2_forward_1.3mps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_forward_1.3mps.txt",
+      "frames": 249,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_left_0.2mps",
+      "file": "go2_left_0.2mps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_left_0.2mps.txt",
+      "frames": 149,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_left_0.5mps",
+      "file": "go2_left_0.5mps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_left_0.5mps.txt",
+      "frames": 250,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_right_0.2mps",
+      "file": "go2_right_0.2mps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_right_0.2mps.txt",
+      "frames": 149,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_right_0.5mps",
+      "file": "go2_right_0.5mps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_right_0.5mps.txt",
+      "frames": 250,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_stance_0.0mps",
+      "file": "go2_stance_0.0mps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_stance_0.0mps.txt",
+      "frames": 147,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_turn_left_0.2radps",
+      "file": "go2_turn_left_0.2radps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_turn_left_0.2radps.txt",
+      "frames": 249,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_turn_left_0.5radps",
+      "file": "go2_turn_left_0.5radps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_turn_left_0.5radps.txt",
+      "frames": 250,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_turn_left_0.8radps",
+      "file": "go2_turn_left_0.8radps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_turn_left_0.8radps.txt",
+      "frames": 250,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_turn_right_0.2radps",
+      "file": "go2_turn_right_0.2radps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_turn_right_0.2radps.txt",
+      "frames": 250,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_turn_right_0.5radps",
+      "file": "go2_turn_right_0.5radps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_turn_right_0.5radps.txt",
+      "frames": 250,
+      "fps": 50.0,
+      "weight": 1.0
+    },
+    {
+      "name": "go2_turn_right_0.8radps",
+      "file": "go2_turn_right_0.8radps.npz",
+      "source": "../wmp_go1/datasets/go2_motion/go2_turn_right_0.8radps.txt",
+      "frames": 250,
+      "fps": 50.0,
+      "weight": 1.0
+    }
+  ],
+  "dataset": "go2",
+  "upstream_repository": "https://github.com/haozhang04/wmp_go1",
+  "upstream_commit": "65cf1afd13e4792bce7b9def6f44372ecbb3cdf0"
+}

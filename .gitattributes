@@ -1,3 +1,6 @@
 * text=auto
 *.npz binary
 *.usd binary
+
+# 保留第三方许可文件的原始字节。
+**/LEGGED_MPC_AMP_LICENSE.txt -text

@@ -1,0 +1,9 @@
+{
+  "repository": "https://github.com/haozhang04/wmp_go1",
+  "commit": "65cf1afd13e4792bce7b9def6f44372ecbb3cdf0",
+  "files": [
+    "legged_gym/sensors/warp/warp_cam.py",
+    "legged_gym/sensors/warp/warp_camera_kernels.py"
+  ],
+  "modifications": "Only WarpCam import path changed; the camera kernels are copied byte-for-byte."
+}

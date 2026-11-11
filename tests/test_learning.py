@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from wmp_go2.constants import (
+from wmp_lab.constants import (
     ACTION_DIM,
     AMP_OBSERVATION_DIM,
     DEPTH_SHAPE,
@@ -15,12 +15,12 @@ from wmp_go2.constants import (
     PROPRIOCEPTION_DIM,
     WORLD_MODEL_ACTION_DIM,
 )
-from wmp_go2.learning.amp import AMPMotionDataset
-from wmp_go2.learning.checkpoint import load_checkpoint, save_checkpoint
-from wmp_go2.learning.networks import ActorCriticWMP, AMPDiscriminator, DepthPredictor
-from wmp_go2.learning.observations import HistoryBuffer, history_frame, split_observation
-from wmp_go2.learning.ppo import AMPPPO
-from wmp_go2.learning.world_model import WorldModel
+from wmp_lab.learning.amp import AMPMotionDataset
+from wmp_lab.learning.checkpoint import load_checkpoint, save_checkpoint
+from wmp_lab.learning.networks import ActorCriticWMP, AMPDiscriminator, DepthPredictor
+from wmp_lab.learning.observations import HistoryBuffer, history_frame, split_observation
+from wmp_lab.learning.ppo import AMPPPO
+from wmp_lab.learning.world_model import WorldModel
 
 
 def _assert_optimizer_step(module: torch.nn.Module, loss: torch.Tensor) -> None:
